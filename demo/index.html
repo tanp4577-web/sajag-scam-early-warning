@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sajag Network – Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f6fb;--card:#fff;--ink:#14213d;--mut:#56627a;--line:#d6ddea;--acc:#0f766e;--hi:#b42318;--mid:#b54708;--on:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1626;--card:#16223a;--ink:#e8edf7;--mut:#9aa8c4;--line:#2a3958;--acc:#2dd4bf;--hi:#f97066;--mid:#fdb022;--on:#06201c}}
+:root[data-theme="dark"]{--bg:#0e1626;--card:#16223a;--ink:#e8edf7;--mut:#9aa8c4;--line:#2a3958;--acc:#2dd4bf;--hi:#f97066;--mid:#fdb022;--on:#06201c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.5 "Mukta",system-ui,sans-serif}
+main{max-width:680px;margin:0 auto;padding:18px 16px 48px}h1{font-size:2rem;margin:6px 0 0}.sub{color:var(--mut);margin:0 0 14px}
+nav{display:flex;gap:8px;margin-bottom:14px}nav button,.b{padding:11px 14px;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font:inherit;font-weight:600;cursor:pointer}
+nav button{flex:1}nav button[aria-pressed=true],.b.p{background:var(--acc);border-color:var(--acc);color:var(--on)}
+.c{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+select,textarea{width:100%;padding:11px;margin:4px 0 10px;border:2px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+label{font-weight:600}:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.tag{display:inline-block;padding:1px 10px;border-radius:99px;font-size:.85rem;font-weight:600;background:var(--hi);color:var(--on)}.tag.m{background:var(--mid)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.mut{color:var(--mut);font-size:.9rem}[hidden]{display:none}
+</style></head><body><main>
+<h1>Sajag Network</h1><p class="sub">Demo: report a scam, confirm it, alert the village. Data stays in this browser.</p>
+<nav><button data-t="r">Report</button><button data-t="m">Moderator</button><button data-t="a">Alerts</button></nav>
+
+<section id="r"><div class="c">
+<label for="v">Village</label><select id="v"></select>
+<label for="ty">What happened?</label><select id="ty"></select>
+<label for="nt">Note (optional)</label><textarea id="nt" rows="2"></textarea>
+<button class="b p" id="sub">Send report</button> <span id="ok" class="mut"></span></div>
+<button class="b" id="seed">Load demo reports</button> <button class="b" id="clr">Clear all</button></section>
+
+<section id="m" hidden><p class="mut">Similar reports from one village are grouped. 3 or more is flagged as a possible outbreak. You decide whether to send an alert.</p><div id="ml"></div></section>
+
+<section id="a" hidden><div class="row" style="margin:0 0 10px"><button class="b" data-l="en">English</button><button class="b" data-l="hi">हिन्दी</button><button class="b" data-l="mr">मराठी</button></div><div id="al"></div></section>
+</main>
+<script>
+var V=["Shivapur","Ambegaon","Wadgaon","Kasarwadi"];
+var TY={
+otp:{n:"OTP / KYC / bank message",en:"Fake bank messages asking for OTP or KYC are going around. Never share your OTP.",hi:"OTP या KYC माँगने वाले नकली बैंक मैसेज घूम रहे हैं। OTP किसी को न बताएँ।",mr:"OTP किंवा KYC मागणारे बनावट बँक मेसेज फिरत आहेत. OTP कोणालाही सांगू नका."},
+police:{n:"Fake police / officer call",en:"Fake police calls are threatening arrest. Real police never ask for money on a call. Hang up.",hi:"नकली पुलिस कॉल गिरफ्तारी की धमकी दे रहे हैं। असली पुलिस कॉल पर पैसे नहीं माँगती। फ़ोन काट दें।",mr:"बनावट पोलीस कॉल अटकेची धमकी देत आहेत. खरे पोलीस कॉलवर पैसे मागत नाहीत. फोन कट करा."},
+prize:{n:"Lottery / prize message",en:"Fake lottery and prize messages are going around. Do not pay any fee to claim a prize.",hi:"नकली लॉटरी और इनाम के मैसेज घूम रहे हैं। इनाम के लिए कोई फीस न दें।",mr:"बनावट लॉटरी आणि बक्षीस मेसेज फिरत आहेत. बक्षिसासाठी कोणतीही फी भरू नका."},
+apk:{n:"APK / link to install",en:"Fake challan and bill messages with APK files are going around. Never install files from a message.",hi:"APK फ़ाइल वाले नकली चालान और बिल मैसेज घूम रहे हैं। मैसेज से कोई फ़ाइल इंस्टॉल न करें।",mr:"APK फाइल असलेले बनावट चलन आणि बिल मेसेज फिरत आहेत. मेसेजमधून कोणतीही फाइल इन्स्टॉल करू नका."},
+elec:{n:"Electricity bill threat",en:"Fake messages say your electricity will be cut today. Pay only through the official office or app.",hi:"नकली मैसेज कह रहे हैं कि आज बिजली कट जाएगी। भुगतान सिर्फ़ आधिकारिक दफ़्तर या ऐप से करें।",mr:"आज वीज तोडली जाईल असे बनावट मेसेज येत आहेत. पैसे फक्त अधिकृत कार्यालयात किंवा ॲपवर भरा."},
+job:{n:"Easy job / earn-from-home offer",en:"Fake work-from-home job offers are going around. No real job asks you to pay first.",hi:"घर बैठे कमाई के नकली ऑफ़र घूम रहे हैं। असली नौकरी में पहले पैसे नहीं माँगे जाते।",mr:"घरबसल्या कमाईच्या बनावट ऑफर फिरत आहेत. खऱ्या नोकरीत आधी पैसे मागत नाहीत."}};
+var HEAD={en:"Alert",hi:"चेतावनी",mr:"सावधान"},FOOT={en:"Report fraud: call 1930",hi:"ठगी की शिकायत: 1930 पर कॉल करें",mr:"फसवणुकीची तक्रार: 1930 वर कॉल करा"};
+var D={reports:[],alerts:[]},L="en";
+function $(i){return document.getElementById(i)}
+function load(){try{D=JSON.parse(localStorage.getItem("sajagDemo"))||D}catch(e){}}
+function save(){try{localStorage.setItem("sajagDemo",JSON.stringify(D))}catch(e){}}
+$("v").innerHTML=V.map(function(x){return"<option>"+x+"</option>"}).join("");
+$("ty").innerHTML=Object.keys(TY).map(function(k){return'<option value="'+k+'">'+TY[k].n+"</option>"}).join("");
+function tab(t){["r","m","a"].forEach(function(x){$(x).hidden=x!==t});document.querySelectorAll("nav button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.t===t)});if(t=="m")mod();if(t=="a")alerts()}
+document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){tab(b.dataset.t)}});
+$("sub").onclick=function(){D.reports.push({v:$("v").value,t:$("ty").value,n:$("nt").value,s:"p",at:Date.now()});$("nt").value="";save();$("ok").textContent="Report received. Thank you.";setTimeout(function(){$("ok").textContent=""},2500)};
+$("seed").onclick=function(){[["Shivapur","otp"],["Shivapur","otp"],["Shivapur","otp"],["Ambegaon","apk"],["Wadgaon","job"]].forEach(function(r){D.reports.push({v:r[0],t:r[1],n:"",s:"p",at:Date.now()})});save();tab("m")};
+$("clr").onclick=function(){D={reports:[],alerts:[]};save();$("ok").textContent="Cleared."};
+function mod(){var g={};D.reports.forEach(function(r){if(r.s=="p"){var k=r.v+"|"+r.t;g[k]=(g[k]||0)+1}});
+var ks=Object.keys(g);$("ml").innerHTML=ks.length?ks.map(function(k){var p=k.split("|"),n=g[k];return'<div class="c"><b>'+p[0]+"</b>: "+TY[p[1]].n+' <span class="tag'+(n>=3?"":" m")+'">'+n+(n>=3?" reports · possible outbreak":" report"+(n>1?"s":""))+'</span><div class="row"><button class="b p" data-k="'+k+'" data-a="c">Confirm and alert</button><button class="b" data-k="'+k+'" data-a="x">Reject</button></div></div>'}).join(""):'<p class="mut">No pending reports. Add some on the Report tab.</p>';
+document.querySelectorAll("#ml button").forEach(function(b){b.onclick=function(){var p=b.dataset.k.split("|"),c=0;D.reports.forEach(function(r){if(r.s=="p"&&r.v==p[0]&&r.t==p[1]){r.s=b.dataset.a;c++}});if(b.dataset.a=="c")D.alerts.unshift({v:p[0],t:p[1],n:c,at:Date.now()});save();mod()}})}
+function alerts(){$("al").innerHTML=D.alerts.length?D.alerts.map(function(a,i){return'<div class="c"><b>'+HEAD[L]+": "+a.v+'</b> <span class="mut">('+a.n+' reports)</span><p>'+TY[a.t][L]+"</p><p class=\"mut\">"+FOOT[L]+'</p><button class="b" data-i="'+i+'">Play voice</button></div>'}).join(""):'<p class="mut">No confirmed alerts yet. Confirm one in the Moderator tab.</p>';
+document.querySelectorAll("#al button").forEach(function(b){b.onclick=function(){speak(D.alerts[b.dataset.i])}})}
+function speak(a){try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(HEAD[L]+". "+a.v+". "+TY[a.t][L]);u.lang=L=="en"?"en-IN":L=="mr"?"mr-IN":"hi-IN";speechSynthesis.speak(u)}catch(e){}}
+document.querySelectorAll("[data-l]").forEach(function(b){b.onclick=function(){L=b.dataset.l;alerts()}});
+load();tab("r");
+</script></body></html>
