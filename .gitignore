@@ -2,3 +2,5 @@
 node_modules/
 .DS_Store
 server/data.json
+server/data.json
+server/node_modules/
