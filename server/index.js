@@ -130,10 +130,13 @@ app.post("/api/speak", async (req, res) => {
       return res.status(r.status).json({ error: "Sarvam API error", detail: errText.slice(0, 300) });
     }
     const data = await r.json();
-    const b64 = data.audios && data.audios[0];
-    if (!b64) return res.status(502).json({ error: "No audio returned by TTS provider" });
+    // Sarvam can return the audio split across multiple base64 fragments in
+    // `audios`. Per their docs, join every fragment before decoding -- taking
+    // only audios[0] silently plays just the first fragment and cuts off early.
+    const combined = Array.isArray(data.audios) ? data.audios.join("") : "";
+    if (!combined) return res.status(502).json({ error: "No audio returned by TTS provider" });
     res.set("Content-Type", "audio/wav");
-    res.send(Buffer.from(b64, "base64"));
+    res.send(Buffer.from(combined, "base64"));
   } catch (e) {
     res.status(502).json({ error: "Could not reach TTS provider" });
   }
