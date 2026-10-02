@@ -57,7 +57,26 @@ var ks=Object.keys(g);$("ml").innerHTML=ks.length?ks.map(function(k){var p=k.spl
 document.querySelectorAll("#ml button").forEach(function(b){b.onclick=function(){var p=b.dataset.k.split("|"),c=0;D.reports.forEach(function(r){if(r.s=="p"&&r.v==p[0]&&r.t==p[1]){r.s=b.dataset.a;c++}});if(b.dataset.a=="c")D.alerts.unshift({v:p[0],t:p[1],n:c,at:Date.now()});save();mod()}})}
 function alerts(){$("al").innerHTML=D.alerts.length?D.alerts.map(function(a,i){return'<div class="c"><b>'+HEAD[L]+": "+a.v+'</b> <span class="mut">('+a.n+' reports)</span><p>'+TY[a.t][L]+"</p><p class=\"mut\">"+FOOT[L]+'</p><button class="b" data-i="'+i+'">Play voice</button></div>'}).join(""):'<p class="mut">No confirmed alerts yet. Confirm one in the Moderator tab.</p>';
 document.querySelectorAll("#al button").forEach(function(b){b.onclick=function(){speak(D.alerts[b.dataset.i])}})}
-function speak(a){try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(HEAD[L]+". "+a.v+". "+TY[a.t][L]);u.lang=L=="en"?"en-IN":L=="mr"?"mr-IN":"hi-IN";speechSynthesis.speak(u)}catch(e){}}
+var VOICES=[];function loadVoices(){try{VOICES=speechSynthesis.getVoices()||[]}catch(e){}}
+try{speechSynthesis.onvoiceschanged=loadVoices;loadVoices()}catch(e){}
+var currentUtter=null; // keep a reference so mobile browsers don't garbage-collect it mid-speech
+function speak(a){
+  try{
+    speechSynthesis.cancel();
+    var wantLang=L=="en"?"en-IN":L=="mr"?"mr-IN":"hi-IN";
+    var text=HEAD[L]+". "+a.v+". "+TY[a.t][L];
+    var u=new SpeechSynthesisUtterance(text);
+    var match=VOICES.find(function(v){return v.lang===wantLang})||VOICES.find(function(v){return v.lang&&v.lang.indexOf(wantLang.split("-")[0])===0});
+    if(match){u.voice=match;u.lang=match.lang}else{u.lang=wantLang} // no installed voice for this language: browser uses its default voice but still reads the full text
+    u.rate=0.95;
+    currentUtter=u; // prevents Chrome/Android from cutting speech short
+    // Chrome bug workaround: speech can pause itself after ~15s on some devices
+    var keepAlive=setInterval(function(){if(speechSynthesis.speaking)speechSynthesis.resume();else clearInterval(keepAlive)},4000);
+    u.onend=function(){clearInterval(keepAlive)};
+    u.onerror=function(){clearInterval(keepAlive)};
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
 document.querySelectorAll("[data-l]").forEach(function(b){b.onclick=function(){L=b.dataset.l;alerts()}});
 load();tab("r");
 </script></body></html>
