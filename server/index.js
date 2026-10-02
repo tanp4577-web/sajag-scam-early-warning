@@ -95,5 +95,44 @@ app.get("/api/alerts", (_req, res) => {
   res.json(db.alerts.slice(0, 100));
 });
 
+// Real neural voice (not the robotic browser voice) via Sarvam AI's TTS, built for
+// Indian languages including Hindi and Marathi. Requires a free API key from sarvam.ai.
+// If no key is set, this endpoint says so and the page falls back to the browser's
+// own voice automatically — nothing breaks, it's just less natural-sounding.
+const LANG_CODE = { en: "en-IN", hi: "hi-IN", mr: "mr-IN" };
+
+app.post("/api/speak", async (req, res) => {
+  const { text, lang } = req.body || {};
+  const apiKey = process.env.SARVAM_API_KEY;
+  if (!apiKey) return res.status(501).json({ error: "SARVAM_API_KEY not set on the server" });
+  if (!text || !LANG_CODE[lang]) return res.status(400).json({ error: "text and a valid lang (en/hi/mr) are required" });
+
+  try {
+    const r = await fetch("https://api.sarvam.ai/text-to-speech", {
+      method: "POST",
+      headers: { "api-subscription-key": apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text,
+        target_language_code: LANG_CODE[lang],
+        model: "bulbul:v2",
+        // Verify this speaker name is valid for your account/language in the Sarvam
+        // dashboard (docs.sarvam.ai) before relying on it — voice names can change.
+        speaker: process.env.SARVAM_SPEAKER || "meera",
+      }),
+    });
+    if (!r.ok) {
+      const errText = await r.text().catch(() => "");
+      return res.status(r.status).json({ error: "Sarvam API error", detail: errText.slice(0, 300) });
+    }
+    const data = await r.json();
+    const b64 = data.audios && data.audios[0];
+    if (!b64) return res.status(502).json({ error: "No audio returned by TTS provider" });
+    res.set("Content-Type", "audio/wav");
+    res.send(Buffer.from(b64, "base64"));
+  } catch (e) {
+    res.status(502).json({ error: "Could not reach TTS provider" });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Sajag server running on port " + PORT));

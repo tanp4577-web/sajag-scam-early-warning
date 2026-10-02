@@ -30,3 +30,19 @@ Free tier sleeps after inactivity, so the first request after a pause is slow �
 
 ## Data storage
 Currently a single `data.json` file — enough for a pilot. Before a real launch, replace `loadDB`/`saveDB` with a real database (Postgres, Supabase, etc.), since a JSON file will not survive redeploys on most free hosts.
+
+## Real neural voice (Hindi, Marathi, English)
+
+By default, voice alerts play with the viewer's browser's own text-to-speech, which
+sounds robotic and often has no Hindi/Marathi voice installed at all. To use a real,
+natural-sounding voice instead:
+
+1. Sign up free at [sarvam.ai](https://sarvam.ai) (built specifically for Indian
+   languages) and get an API key from their dashboard.
+2. On Render, add an environment variable `SARVAM_API_KEY` with that key.
+3. Optionally set `SARVAM_SPEAKER` to a voice name from their dashboard (default: `meera`).
+4. Redeploy. The demo's "Play voice" button will now use this automatically — if the
+   key isn't set, or the call fails, it quietly falls back to the browser's own voice.
+
+Check Sarvam's current docs for valid speaker names and pricing before relying on
+this for anything beyond a demo — voice names and free-tier limits can change.
