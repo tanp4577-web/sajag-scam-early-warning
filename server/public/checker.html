@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sajag – Scam message checker</title>
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f6fb;--card:#fff;--ink:#14213d;--muted:#56627a;--line:#d6ddea;--acc:#0f766e;--hi:#b42318;--mid:#b54708;--lo:#067647;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1626;--card:#16223a;--ink:#e8edf7;--muted:#9aa8c4;--line:#2a3958;--acc:#2dd4bf;--hi:#f97066;--mid:#fdb022;--lo:#47cd89}}
+:root[data-theme="dark"]{--bg:#0e1626;--card:#16223a;--ink:#e8edf7;--muted:#9aa8c4;--line:#2a3958;--acc:#2dd4bf;--hi:#f97066;--mid:#fdb022;--lo:#47cd89}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Mukta",system-ui,sans-serif;font-size:18px;line-height:1.5}
+main{max-width:640px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:2.4rem;font-weight:800;margin:8px 0 0;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:2px 0 16px}
+.lang{display:flex;gap:8px;margin-bottom:16px}
+.lang button{flex:1;padding:10px;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font:inherit;font-weight:600;cursor:pointer}
+.lang button[aria-pressed="true"]{border-color:var(--acc);background:var(--acc);color:#fff}
+@media (prefers-color-scheme:dark){.lang button[aria-pressed="true"]{color:#06201c}}
+textarea{width:100%;min-height:150px;padding:14px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;resize:vertical}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.go{width:100%;margin-top:10px;padding:14px;border:0;border-radius:12px;background:var(--acc);color:#fff;font:inherit;font-weight:800;font-size:1.1rem;cursor:pointer}
+@media (prefers-color-scheme:dark){.go{color:#06201c}}
+.samples{margin:16px 0 8px;color:var(--muted);font-size:.95rem}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{padding:8px 12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;font:inherit;font-size:.95rem;cursor:pointer}
+#out{margin-top:20px;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:18px}
+#out[hidden]{display:none}
+.verdict{font-size:1.6rem;font-weight:800;margin:0}
+.bar{height:12px;background:var(--line);border-radius:6px;margin:10px 0 14px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;transition:width .4s}
+ul{padding-left:20px;margin:6px 0 14px}
+h2{font-size:1.05rem;margin:14px 0 2px}
+.foot{margin-top:24px;color:var(--muted);font-size:.9rem}
+</style>
+</head>
+<body>
+<main>
+<h1>सजग · Sajag</h1>
+<p class="sub" id="sub"></p>
+<div class="lang" role="group" aria-label="Language">
+<button data-l="en">English</button><button data-l="hi">हिन्दी</button><button data-l="mr">मराठी</button>
+</div>
+<textarea id="msg" aria-label="Message"></textarea>
+<button class="go" id="go"></button>
+<p class="samples" id="sl"></p>
+<div class="chips" id="chips"></div>
+<section id="out" hidden aria-live="polite">
+<p class="verdict" id="v"></p>
+<div class="bar"><i id="b"></i></div>
+<h2 id="wl"></h2><ul id="why"></ul>
+<h2 id="tl"></h2><ul id="tips"></ul>
+</section>
+<p class="foot" id="foot"></p>
+</main>
+<script>
+var T={
+en:{sub:"Paste a suspicious SMS or WhatsApp message. Find out if it is a scam.",ph:"Paste the message here…",go:"Check message",sl:"Try an example:",wl:"Why we think so",tl:"What to do",foot:"Private: your message is checked on this phone and is never sent anywhere.",
+v:["Very likely a scam","Looks suspicious","No obvious scam signs"],
+tips:[["Do not reply, click, or call back.","Never share OTP, PIN, or password with anyone. Banks never ask.","Report it: call 1930 or visit cybercrime.gov.in."],["Do not click links. Call the company on its official number.","Ask a family member before you act."],["Stay careful. Never share OTP or PIN.","When unsure, ask someone you trust."]],
+none:"No scam patterns found in this message."},
+hi:{sub:"कोई शक वाला SMS या WhatsApp मैसेज यहाँ डालें। जानें कि यह ठगी है या नहीं।",ph:"मैसेज यहाँ पेस्ट करें…",go:"मैसेज जाँचें",sl:"उदाहरण आज़माएँ:",wl:"हमें ऐसा क्यों लगा",tl:"क्या करें",foot:"निजी: आपका मैसेज इसी फ़ोन पर जाँचा जाता है, कहीं भेजा नहीं जाता।",
+v:["बहुत संभव है यह ठगी है","यह संदिग्ध लगता है","ठगी के साफ़ संकेत नहीं मिले"],
+tips:[["जवाब न दें, लिंक न खोलें, वापस कॉल न करें।","OTP, PIN या पासवर्ड किसी को न बताएँ। बैंक कभी नहीं माँगता।","रिपोर्ट करें: 1930 पर कॉल करें या cybercrime.gov.in पर जाएँ।"],["लिंक न खोलें। कंपनी के आधिकारिक नंबर पर खुद कॉल करें।","कोई कदम उठाने से पहले घर में किसी से पूछें।"],["सावधान रहें। OTP या PIN कभी न बताएँ।","शक हो तो किसी भरोसेमंद से पूछें।"]],
+none:"इस मैसेज में ठगी के पैटर्न नहीं मिले।"},
+mr:{sub:"संशयास्पद SMS किंवा WhatsApp मेसेज येथे टाका. फसवणूक आहे का ते जाणून घ्या.",ph:"मेसेज येथे पेस्ट करा…",go:"मेसेज तपासा",sl:"उदाहरण पहा:",wl:"असे का वाटले",tl:"काय करावे",foot:"खाजगी: तुमचा मेसेज याच फोनवर तपासला जातो, कुठेही पाठवला जात नाही.",
+v:["ही फसवणूक असण्याची शक्यता जास्त आहे","हे संशयास्पद वाटते","फसवणुकीची स्पष्ट चिन्हे नाहीत"],
+tips:[["उत्तर देऊ नका, लिंक उघडू नका, परत कॉल करू नका.","OTP, PIN किंवा पासवर्ड कोणालाही सांगू नका. बँक कधीच मागत नाही.","तक्रार करा: 1930 वर कॉल करा किंवा cybercrime.gov.in वर जा."],["लिंक उघडू नका. कंपनीच्या अधिकृत नंबरवर स्वतः कॉल करा.","कृती करण्यापूर्वी घरातील कोणाला तरी विचारा."],["सावध रहा. OTP किंवा PIN कधीही सांगू नका.","शंका असल्यास विश्वासू व्यक्तीला विचारा."]],
+none:"या मेसेजमध्ये फसवणुकीचे नमुने आढळले नाहीत."}
+};
+var R=[
+{w:30,re:/otp|cvv|\bpin\b|password|पासवर्ड|ओटीपी|पिन/i,t:{en:"Asks for OTP, PIN or password. Real banks never do.",hi:"OTP, PIN या पासवर्ड माँगा गया है। असली बैंक ऐसा नहीं करते।",mr:"OTP, PIN किंवा पासवर्ड मागितला आहे. खऱ्या बँका असे करत नाहीत."}},
+{w:25,re:/kyc|केवायसी|(account|खाता|खाते|card|कार्ड).{0,30}(block|suspend|close|expire|बंद|ब्लॉक|बंद होगा|बंद होईल)|(block|suspend|बंद|ब्लॉक).{0,30}(account|खाता|खाते)/i,t:{en:"Threatens to block your account or asks for KYC update.",hi:"खाता बंद करने की धमकी या KYC अपडेट की माँग।",mr:"खाते बंद करण्याची धमकी किंवा KYC अपडेटची मागणी."}},
+{w:20,re:/urgent|immediately|within \d+ ?(hour|hrs|min)|today only|last chance|expires|तुरंत|अभी|आज ही|घंटे में|लगेच|ताबडतोब|आजच|तासांत/i,t:{en:"Creates panic with a deadline.",hi:"समय-सीमा बताकर घबराहट पैदा की जा रही है।",mr:"मुदत सांगून घबराट निर्माण केली जात आहे."}},
+{w:30,re:/lottery|lucky draw|prize|winner|you have won|congratulations|लॉटरी|इनाम|जीत लिया|बधाई|बक्षीस|जिंकला|अभिनंदन/i,t:{en:"Says you won a prize or lottery.",hi:"इनाम या लॉटरी जीतने की बात कही गई है।",mr:"बक्षीस किंवा लॉटरी जिंकल्याचे सांगितले आहे."}},
+{w:30,re:/police|cbi|customs|arrest|digital arrest|court|narcotics|पुलिस|गिरफ्तार|कस्टम|अटक|पोलीस|न्यायालय/i,t:{en:"Pretends to be police or an officer and threatens arrest.",hi:"पुलिस या अधिकारी बनकर गिरफ्तारी की धमकी।",mr:"पोलीस किंवा अधिकारी बनून अटकेची धमकी."}},
+{w:25,re:/processing fee|registration fee|send money|transfer .{0,20}(rs|₹|inr)|pay .{0,20}(rs|₹)|advance|फीस|शुल्क|पैसे भेज|एडवांस|रक्कम पाठव|फी भरा/i,t:{en:"Asks you to send money first.",hi:"पहले पैसे भेजने को कहा गया है।",mr:"आधी पैसे पाठवायला सांगितले आहे."}},
+{w:25,re:/work from home|earn .{0,20}per day|part.?time job|like and earn|घर बैठे कमा|पार्ट टाइम जॉब|घरबसल्या कमवा|रोज.{0,10}कमाएँ|रोज.{0,10}कमवा/i,t:{en:"Offers easy money for little work.",hi:"कम काम में आसान कमाई का लालच।",mr:"कमी कामात सोपी कमाई देण्याचे आमिष."}},
+{w:15,re:/electricity|power (will be )?(cut|disconnect)|बिजली|वीज (बिल|कापली|खंडित)/i,t:{en:"Claims your electricity will be cut unless you act.",hi:"तुरंत कदम न उठाने पर बिजली कटने का दावा।",mr:"लगेच कृती न केल्यास वीज तोडण्याचा दावा."}},
+{w:35,re:/\.apk\b/i,t:{en:"Asks you to install an APK file. This can steal your bank details.",hi:"APK फ़ाइल इंस्टॉल करने को कहा गया है। इससे बैंक जानकारी चोरी हो सकती है।",mr:"APK फाइल इन्स्टॉल करायला सांगितले आहे. यामुळे बँक माहिती चोरीला जाऊ शकते."}},
+{w:20,re:/https?:\/\/\S+|bit\.ly|tinyurl|\.xyz|\.top\b|\.cc\b|wa\.me/i,t:{en:"Contains a link. Scam links often look like real sites.",hi:"इसमें लिंक है। ठगी वाले लिंक अक्सर असली साइट जैसे दिखते हैं।",mr:"यात लिंक आहे. फसवे लिंक बहुतेकदा खऱ्या साइटसारखे दिसतात."}}
+];
+var L="en";
+try{L=localStorage.getItem("sajagL")||"en"}catch(e){L="en"}
+var S=[
+{l:"OTP",x:"Dear customer, your SBI account will be blocked today. Update KYC immediately: http://sbi-kyc-update.xyz and share the OTP."},
+{l:"इनाम",x:"बधाई हो! आपने ₹25 लाख की लॉटरी जीती है। इनाम पाने के लिए आज ही ₹4,999 प्रोसेसिंग फीस भेजें।"},
+{l:"पोलीस",x:"तुमच्या नावावर पार्सलमध्ये ड्रग्ज सापडले. मुंबई पोलीस तुम्हाला अटक करतील. ताबडतोब या नंबरवर कॉल करा."},
+{l:"OK",x:"Hi, your Amazon order is out for delivery and will reach you by 6 pm today."}
+];
+function $(i){return document.getElementById(i)}
+function ui(){
+var t=T[L];document.documentElement.lang=L;
+$("sub").textContent=t.sub;$("msg").placeholder=t.ph;$("go").textContent=t.go;$("sl").textContent=t.sl;$("foot").textContent=t.foot;
+document.querySelectorAll(".lang button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.l===L)});
+if(!$("out").hidden)check();
+}
+function check(){
+var m=$("msg").value.trim();if(!m)return;
+var sc=0,hits=[];R.forEach(function(r){if(r.re.test(m)){sc+=r.w;hits.push(r.t[L])}});
+sc=Math.min(sc,100);var k=sc>=60?0:sc>=30?1:2,t=T[L],c=["var(--hi)","var(--mid)","var(--lo)"][k];
+$("out").hidden=false;$("out").style.borderColor=c;
+$("v").textContent=t.v[k];$("v").style.color=c;
+$("b").style.width=Math.max(sc,6)+"%";$("b").style.background=c;
+$("wl").textContent=t.wl;$("tl").textContent=t.tl;
+$("why").innerHTML="";(hits.length?hits:[t.none]).forEach(function(h){var li=document.createElement("li");li.textContent=h;$("why").appendChild(li)});
+$("tips").innerHTML="";t.tips[k].forEach(function(h){var li=document.createElement("li");li.textContent=h;$("tips").appendChild(li)});
+}
+document.querySelectorAll(".lang button").forEach(function(b){b.onclick=function(){L=b.dataset.l;try{localStorage.setItem("sajagL",L)}catch(e){}ui()}});
+S.forEach(function(s){var b=document.createElement("button");b.textContent=s.l;b.onclick=function(){$("msg").value=s.x;check()};$("chips").appendChild(b)});
+$("go").onclick=check;ui();
+</script>
+</body>
+</html>

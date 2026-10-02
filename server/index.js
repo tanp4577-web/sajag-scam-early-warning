@@ -22,6 +22,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Serve the demo page at "/", the checker at "/checker.html", and the pitch PDF at
+// "/pitch.pdf". These live in server/public so they deploy together with the API,
+// even on platforms (like Vercel) that only upload this one folder.
+app.use(express.static(path.join(__dirname, "public")));
+
 // Health check
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
