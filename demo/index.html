@@ -59,22 +59,42 @@ function alerts(){$("al").innerHTML=D.alerts.length?D.alerts.map(function(a,i){r
 document.querySelectorAll("#al button").forEach(function(b){b.onclick=function(){speak(D.alerts[b.dataset.i])}})}
 var VOICES=[];function loadVoices(){try{VOICES=speechSynthesis.getVoices()||[]}catch(e){}}
 try{speechSynthesis.onvoiceschanged=loadVoices;loadVoices()}catch(e){}
-var currentUtter=null; // keep a reference so mobile browsers don't garbage-collect it mid-speech
+var queuedUtters=[]; // keep references so mobile browsers don't garbage-collect mid-speech
+// Chrome/Android has a known bug (chromium issue 369472): a single utterance over
+// roughly 32 characters can get silently cut short, especially for non-Latin scripts
+// like Devanagari. Fix: split into short chunks and speak them as chained utterances.
+function splitForSpeech(text){
+  var parts=text.split(/(?<=[.।!?])\s+/).filter(Boolean); // split on sentence end, incl. Hindi danda
+  var chunks=[];
+  parts.forEach(function(p){
+    if(p.length<=28){chunks.push(p);return}
+    var words=p.split(" "),cur="";
+    words.forEach(function(w){
+      if((cur+" "+w).trim().length>28){if(cur)chunks.push(cur.trim());cur=w}else{cur=(cur+" "+w).trim()}
+    });
+    if(cur)chunks.push(cur.trim());
+  });
+  return chunks;
+}
 function speak(a){
   try{
-    speechSynthesis.cancel();
+    speechSynthesis.cancel();queuedUtters=[];
     var wantLang=L=="en"?"en-IN":L=="mr"?"mr-IN":"hi-IN";
-    var text=HEAD[L]+". "+a.v+". "+TY[a.t][L];
-    var u=new SpeechSynthesisUtterance(text);
     var match=VOICES.find(function(v){return v.lang===wantLang})||VOICES.find(function(v){return v.lang&&v.lang.indexOf(wantLang.split("-")[0])===0});
-    if(match){u.voice=match;u.lang=match.lang}else{u.lang=wantLang} // no installed voice for this language: browser uses its default voice but still reads the full text
-    u.rate=0.95;
-    currentUtter=u; // prevents Chrome/Android from cutting speech short
-    // Chrome bug workaround: speech can pause itself after ~15s on some devices
-    var keepAlive=setInterval(function(){if(speechSynthesis.speaking)speechSynthesis.resume();else clearInterval(keepAlive)},4000);
-    u.onend=function(){clearInterval(keepAlive)};
-    u.onerror=function(){clearInterval(keepAlive)};
-    speechSynthesis.speak(u);
+    var text=HEAD[L]+". "+a.v+". "+TY[a.t][L];
+    var chunks=splitForSpeech(text);
+    var i=0;
+    function next(){
+      if(i>=chunks.length)return;
+      var u=new SpeechSynthesisUtterance(chunks[i]);
+      if(match){u.voice=match;u.lang=match.lang}else{u.lang=wantLang}
+      u.rate=0.9;
+      queuedUtters.push(u);
+      u.onend=function(){i++;next()};
+      u.onerror=function(){i++;next()}; // skip a bad chunk rather than stop the whole alert
+      speechSynthesis.speak(u);
+    }
+    next();
   }catch(e){}
 }
 document.querySelectorAll("[data-l]").forEach(function(b){b.onclick=function(){L=b.dataset.l;alerts()}});
